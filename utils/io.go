@@ -97,7 +97,19 @@ func FormatDecimal(integer int, exp int) string {
 	return string(bytes)
 }
 
+// Return env variable value for the given key,
+// or the fallback value if undefined or empty
 func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		if len(value) > 0 {
+			return value
+		}
+	}
+	return fallback
+}
+
+// Same as GetEnv but does not fallback on empty values
+func GetEnvEnpty(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
