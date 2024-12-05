@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io"
 	"os"
@@ -11,13 +12,14 @@ import (
 )
 
 type Root struct {
-	XMLName        xml.Name           `xml:"root"`
-	Date           utils.XSDDateTime  `xml:"date,omitempty"`
-	DatePtr        *utils.XSDDateTime `xml:"datePtr,omitempty"`
-	DateMissing    utils.XSDDateTime  `xml:"dateMissing,omitempty"`
-	DateMissingPtr *utils.XSDDateTime `xml:"dateMissingPtr,omitempty"`
-	DateEmpty      utils.XSDDateTime  `xml:"dateEmpty,omitempty"`
-	DateEmptyPtr   *utils.XSDDateTime `xml:"dateEmptyPtr,omitempty"`
+	XMLName        xml.Name           `xml:"root" json:"-"`
+	Version        *utils.PrefixAttr  `xml:"version,attr,omitempty" json:"@version,omitempty"`
+	Date           utils.XSDDateTime  `xml:"date,omitempty" json:"date,omitempty"`
+	DatePtr        *utils.XSDDateTime `xml:"datePtr,omitempty" json:"datePtr,omitempty"`
+	DateMissing    utils.XSDDateTime  `xml:"dateMissing,omitempty" json:"dateMissing,omitempty"`
+	DateMissingPtr *utils.XSDDateTime `xml:"dateMissingPtr,omitempty" json:"dateMissingPtr,omitempty"`
+	DateEmpty      utils.XSDDateTime  `xml:"dateEmpty,omitempty" json:"dateEmpty,omitempty"`
+	DateEmptyPtr   *utils.XSDDateTime `xml:"dateEmptyPtr,omitempty" json:"dateEmptyPtr,omitempty"`
 }
 
 func TestXMLUtils(t *testing.T) {
@@ -34,6 +36,48 @@ func TestXMLUtils(t *testing.T) {
 	actual, _ := xml.MarshalIndent(&doc, "", "  ")
 	actual = append(actual, '\n')
 	expectedFile, err := os.Open("test.xml.out")
+	if err != nil {
+		t.Fatalf("Failure parsing test file: %v", err)
+	}
+	expected, _ := io.ReadAll(expectedFile)
+	assert.Equal(t, string(expected), string(actual))
+}
+
+func TestXMLToJSON(t *testing.T) {
+	xf, err := os.Open("test.xml")
+	if err != nil {
+		t.Fatalf("Failure parsing test file: %v", err)
+	}
+	xd, _ := io.ReadAll(xf)
+	var doc Root
+	err = xml.Unmarshal(xd, &doc)
+	if err != nil {
+		t.Fatalf("Failure marshaling test file %v", err)
+	}
+	actual, _ := json.MarshalIndent(&doc, "", "  ")
+	actual = append(actual, '\n')
+	expectedFile, err := os.Open("test.json")
+	if err != nil {
+		t.Fatalf("Failure parsing test file: %v", err)
+	}
+	expected, _ := io.ReadAll(expectedFile)
+	assert.Equal(t, string(expected), string(actual))
+}
+
+func TestJSONUnThenMarshal(t *testing.T) {
+	xf, err := os.Open("test.json")
+	if err != nil {
+		t.Fatalf("Failure parsing test file: %v", err)
+	}
+	xd, _ := io.ReadAll(xf)
+	var doc Root
+	err = json.Unmarshal(xd, &doc)
+	if err != nil {
+		t.Fatalf("Failure marshaling test file %v", err)
+	}
+	actual, _ := json.MarshalIndent(&doc, "", "  ")
+	actual = append(actual, '\n')
+	expectedFile, err := os.Open("test.json")
 	if err != nil {
 		t.Fatalf("Failure parsing test file: %v", err)
 	}

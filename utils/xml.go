@@ -93,6 +93,15 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	return xml.Attr{Name: xml.Name{Space: "", Local: qName}, Value: value}, nil
 }
 
+func (pxAttr *PrefixAttr) UnmarshalText(text []byte) error {
+	pxAttr.Value = string(text)
+	return nil
+}
+
+func (pxAttr *PrefixAttr) MarshalText() ([]byte, error) {
+	return []byte(pxAttr.Value), nil
+}
+
 const ISO8601FormatInUTC = "2006-01-02T15:04:05.999Z"
 const ISO8601FormatInLocal = "2006-01-02T15:04:05.999"
 const ISO8601FormatInTZ = "2006-01-02T15:04:05.999-0700"
