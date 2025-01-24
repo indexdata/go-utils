@@ -4,19 +4,20 @@ import (
 	"encoding/xml"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
 const XMLNS string = "xmlns"
 
 var defaultNS string
-var spaceToPrefix = make(map[string]string)
-var prefixToSpace = make(map[string]string)
-var attrDefaults = make(map[string]string)
+var spaceToPrefix sync.Map
+var prefixToSpace sync.Map
+var attrDefaults sync.Map
 
 func NSPrefix(prefix string, uri string) {
-	prefixToSpace[prefix] = uri
-	spaceToPrefix[uri] = prefix
+	prefixToSpace.Store(prefix, uri)
+	spaceToPrefix.Store(uri, prefix)
 }
 
 func NSDefault(uri string) {
@@ -24,7 +25,7 @@ func NSDefault(uri string) {
 }
 
 func AttrDefault(attr string, val string) {
-	attrDefaults[attr] = val
+	attrDefaults.Store(attr, val)
 }
 
 // Go's encoding/xml does not handle namespace prefixes and by extension cannot properly
@@ -47,7 +48,7 @@ func (pxAttr *PrefixAttr) UnmarshalXMLAttr(attr xml.Attr) error {
 	val := attr.Value
 	//namespace registration
 	if ns == XMLNS {
-		spaceToPrefix[val] = name
+		spaceToPrefix.Store(val, name)
 	}
 	if ns == "" && name == XMLNS {
 		defaultNS = val
@@ -70,15 +71,18 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	if ns == XMLNS {
 		qName = "xmlns:" + locName
 		if value == "" {
-			value = prefixToSpace[locName]
+			v, ok := prefixToSpace.Load(locName)
+			if ok {
+				value = v.(string)
+			}
 		}
 	} else {
 		if ns == "" && locName != XMLNS {
 			ns = defaultNS
 		}
-		prefix := spaceToPrefix[ns]
-		if prefix != "" {
-			qName = prefix + ":" + locName
+		prefix, ok := spaceToPrefix.Load(ns)
+		if ok {
+			qName = prefix.(string) + ":" + locName
 		} else {
 			qName = locName
 		}
@@ -87,7 +91,10 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 		if locName == XMLNS {
 			value = defaultNS
 		} else {
-			value = attrDefaults[locName]
+			v, ok := attrDefaults.Load(locName)
+			if ok {
+				value = v.(string)
+			}
 		}
 	}
 	return xml.Attr{Name: xml.Name{Space: "", Local: qName}, Value: value}, nil
