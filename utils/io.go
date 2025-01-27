@@ -14,6 +14,15 @@ type WriteFlusher interface {
 	Flush() error
 }
 
+// Panics when error is not nil
+func Must[T any](ret T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return ret
+}
+
+// Logs the error if not nil and continues
 func Warn[T any](res T, err error) T {
 	if err != nil {
 		log.Println(err)
@@ -21,6 +30,7 @@ func Warn[T any](res T, err error) T {
 	return res
 }
 
+// Logs the error if not nill and terminates the program
 func Fail[T any](res T, err error) T {
 	if err != nil {
 		log.Fatalln(err)
