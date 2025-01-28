@@ -109,14 +109,14 @@ func FormatDecimal(integer int, exp int) string {
 
 // Returns envvar value or fallback if undefined or empty.
 func GetEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+	if value := os.Getenv(key); len(value) > 0 {
 		return value
 	}
 	return fallback
 }
 
 // Same as GetEnv but does not fallback on empty values.
-func GetEnvEnpty(key, fallback string) string {
+func LookupEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
@@ -127,35 +127,25 @@ func GetEnvEnpty(key, fallback string) string {
 // Returns both fallback and error if the value is non-empty but cannot be converted to int,
 // this allows suppressing the error when fallback should be used.
 func GetEnvInt(key string, fallback int) (int, error) {
-	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
-		if val, err := strconv.Atoi(value); err == nil {
-			return val, nil
-		} else {
-			return fallback, err
-		}
-	}
-	return fallback, nil
+	return GetEnvAny(key, fallback, func(value string) (int, error) {
+		return strconv.Atoi(value)
+	})
 }
 
 // Returns envvar value or fallback if undefined or empty.
 // Returns both fallback and error if the value is non-empty but cannot be converted to bool,
 // this allows suppressing the error when fallback should be used.
 func GetEnvBool(key string, fallback bool) (bool, error) {
-	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
-		if val, err := strconv.ParseBool(value); err == nil {
-			return val, nil
-		} else {
-			return fallback, err
-		}
-	}
-	return fallback, nil
+	return GetEnvAny(key, fallback, func(value string) (bool, error) {
+		return strconv.ParseBool(value)
+	})
 }
 
 // Returns envvar value converted with mapper or fallback if undefined or empty.
 // Returns both fallback and error if the mapper errors,
 // this allows suppressing the error when fallback should be used.
 func GetEnvAny[T any](key string, fallback T, mapper func(string) (T, error)) (T, error) {
-	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+	if value := os.Getenv(key); len(value) > 0 {
 		if val, err := mapper(value); err == nil {
 			return val, nil
 		} else {
