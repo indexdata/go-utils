@@ -107,18 +107,15 @@ func FormatDecimal(integer int, exp int) string {
 	return string(bytes)
 }
 
-// Return env variable value for the given key,
-// or the fallback value if undefined or empty
+// Returns envvar value or fallback if undefined or empty.
 func GetEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		if len(value) > 0 {
-			return value
-		}
+	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+		return value
 	}
 	return fallback
 }
 
-// Same as GetEnv but does not fallback on empty values
+// Same as GetEnv but does not fallback on empty values.
 func GetEnvEnpty(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -126,20 +123,44 @@ func GetEnvEnpty(key, fallback string) string {
 	return fallback
 }
 
-func GetEnvInt(key string, fallback int) int {
-	if value, ok := os.LookupEnv(key); ok {
-		if v, err := strconv.Atoi(value); err == nil {
-			return v
+// Returns envvar value or fallback if undefined or empty.
+// Returns both fallback and error if the value is non-empty but cannot be converted to int,
+// this allows suppressing the error when fallback should be used.
+func GetEnvInt(key string, fallback int) (int, error) {
+	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+		if val, err := strconv.Atoi(value); err == nil {
+			return val, nil
+		} else {
+			return fallback, err
 		}
 	}
-	return fallback
+	return fallback, nil
 }
 
-func GetEnvBool(key string, fallback bool) bool {
-	if value, ok := os.LookupEnv(key); ok {
-		if v, err := strconv.ParseBool(value); err == nil {
-			return v
+// Returns envvar value or fallback if undefined or empty.
+// Returns both fallback and error if the value is non-empty but cannot be converted to bool,
+// this allows suppressing the error when fallback should be used.
+func GetEnvBool(key string, fallback bool) (bool, error) {
+	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+		if val, err := strconv.ParseBool(value); err == nil {
+			return val, nil
+		} else {
+			return fallback, err
 		}
 	}
-	return fallback
+	return fallback, nil
+}
+
+// Returns envvar value converted with mapper or fallback if undefined or empty.
+// Returns both fallback and error if the mapper errors,
+// this allows suppressing the error when fallback should be used.
+func GetEnvAny[T any](key string, fallback T, mapper func(string) (T, error)) (T, error) {
+	if value, ok := os.LookupEnv(key); ok && len(value) > 0 {
+		if val, err := mapper(value); err == nil {
+			return val, nil
+		} else {
+			return fallback, err
+		}
+	}
+	return fallback, nil
 }

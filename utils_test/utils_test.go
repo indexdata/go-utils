@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"io"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/indexdata/go-utils/utils"
@@ -20,6 +21,91 @@ type Root struct {
 	DateMissingPtr *utils.XSDDateTime `xml:"dateMissingPtr,omitempty" json:"dateMissingPtr,omitempty"`
 	DateEmpty      utils.XSDDateTime  `xml:"dateEmpty,omitempty" json:"dateEmpty,omitempty"`
 	DateEmptyPtr   *utils.XSDDateTime `xml:"dateEmptyPtr,omitempty" json:"dateEmptyPtr,omitempty"`
+}
+
+func TestGetEnvInt(t *testing.T) {
+	os.Unsetenv("ENV_INT")
+	//unset
+	val, _ := utils.GetEnvInt("ENV_INT", 1)
+	assert.Equal(t, 1, val)
+	os.Setenv("ENV_INT", "2")
+	//set
+	val, _ = utils.GetEnvInt("ENV_INT", 1)
+	assert.Equal(t, 2, val)
+	//set to zero val
+	os.Setenv("ENV_INT", "0")
+	val, _ = utils.GetEnvInt("ENV_INT", 1)
+	assert.Equal(t, 0, val)
+	//empty
+	os.Setenv("ENV_INT", "")
+	val, _ = utils.GetEnvInt("ENV_INT", 1)
+	assert.Equal(t, 1, val)
+	//malformed
+	os.Setenv("ENV_INT", "error")
+	vale, err := utils.GetEnvInt("ENV_INT", 1)
+	assert.Equal(t, 1, vale)
+	assert.EqualError(t, err, "strconv.Atoi: parsing \"error\": invalid syntax")
+	os.Unsetenv("ENV_INT")
+}
+
+func TestGetEnvBool(t *testing.T) {
+	os.Unsetenv("ENV_BOOL")
+	//unset
+	val, _ := utils.GetEnvBool("ENV_BOOL", true)
+	assert.Equal(t, true, val)
+	//set
+	os.Setenv("ENV_BOOL", "true")
+	val, _ = utils.GetEnvBool("ENV_BOOL", true)
+	assert.Equal(t, true, val)
+	//set to zero value
+	os.Setenv("ENV_BOOL", "false")
+	val, _ = utils.GetEnvBool("ENV_BOOL", true)
+	assert.Equal(t, false, val)
+	//empty
+	os.Setenv("ENV_BOOL", "")
+	val, _ = utils.GetEnvBool("ENV_BOOL", true)
+	assert.Equal(t, true, val)
+	//malformed
+	os.Setenv("ENV_BOOL", "error")
+	vale, err := utils.GetEnvBool("ENV_BOOL", true)
+	assert.Equal(t, true, vale)
+	assert.EqualError(t, err, "strconv.ParseBool: parsing \"error\": invalid syntax")
+	os.Unsetenv("ENV_BOOL")
+}
+
+func TestGetEnvAny(t *testing.T) {
+	os.Unsetenv("ENV_BOOL")
+	//unset
+	val, _ := utils.GetEnvAny("ENV_BOOL", true, func(env string) (bool, error) {
+		return strconv.ParseBool(env)
+	})
+	assert.Equal(t, true, val)
+	//set
+	os.Setenv("ENV_BOOL", "true")
+	val, _ = utils.GetEnvAny("ENV_BOOL", true, func(env string) (bool, error) {
+		return strconv.ParseBool(env)
+	})
+	assert.Equal(t, true, val)
+	//set to zero value
+	os.Setenv("ENV_BOOL", "false")
+	val, _ = utils.GetEnvAny("ENV_BOOL", true, func(env string) (bool, error) {
+		return strconv.ParseBool(env)
+	})
+	assert.Equal(t, false, val)
+	//empty
+	os.Setenv("ENV_BOOL", "")
+	val, _ = utils.GetEnvAny("ENV_BOOL", true, func(env string) (bool, error) {
+		return strconv.ParseBool(env)
+	})
+	assert.Equal(t, true, val)
+	//malformed
+	os.Setenv("ENV_BOOL", "error")
+	vale, err := utils.GetEnvAny("ENV_BOOL", true, func(env string) (bool, error) {
+		return strconv.ParseBool(env)
+	})
+	assert.Equal(t, true, vale)
+	assert.EqualError(t, err, "strconv.ParseBool: parsing \"error\": invalid syntax")
+	os.Unsetenv("ENV_BOOL")
 }
 
 func TestXMLUtils(t *testing.T) {
