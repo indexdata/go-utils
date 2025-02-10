@@ -9,6 +9,9 @@ COVERAGE=coverage.out
 check:
 	$(GO) test -v -cover -coverpkg=./... -coverprofile=$(COVERAGE) ./...
 
+view-coverage: check
+	$(GO) tool cover -html=$(COVERAGE)
+
 fmt:
 	$(GOFMT) -w $(GOFILES)
 
