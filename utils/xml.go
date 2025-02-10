@@ -42,6 +42,10 @@ func NewPrefixAttr(name string, value string) *PrefixAttr {
 	return &PrefixAttr{Attr: xml.Attr{Name: xml.Name{Local: name}, Value: value}}
 }
 
+func NewPrefixAttrNS(ns string, name string, value string) *PrefixAttr {
+	return &PrefixAttr{Attr: xml.Attr{Name: xml.Name{Space: ns, Local: name}, Value: value}}
+}
+
 func (pxAttr *PrefixAttr) UnmarshalXMLAttr(attr xml.Attr) error {
 	ns := attr.Name.Space
 	name := attr.Name.Local

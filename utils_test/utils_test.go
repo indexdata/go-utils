@@ -260,3 +260,17 @@ func TestExtractDecimal(t *testing.T) {
 	out := utils.FormatDecimal(0, 0)
 	assert.Equal(t, out, "0")
 }
+
+func TestNewPrefixAttrNS(t *testing.T) {
+	prefixAttr := utils.NewPrefixAttrNS("http://www.mygoofy.org/", "x", "v")
+	assert.Equal(t, "http://www.mygoofy.org/", prefixAttr.Name.Space)
+	assert.Equal(t, "x", prefixAttr.Name.Local)
+	assert.Equal(t, "v", prefixAttr.Value)
+}
+
+func TestNewPrefixAttr(t *testing.T) {
+	prefixAttr := utils.NewPrefixAttr("x", "v")
+	assert.Empty(t, prefixAttr.Name.Space)
+	assert.Equal(t, "x", prefixAttr.Name.Local)
+	assert.Equal(t, "v", prefixAttr.Value)
+}
