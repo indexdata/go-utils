@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -153,4 +154,16 @@ func GetEnvAny[T any](key string, fallback T, mapper func(string) (T, error)) (T
 		}
 	}
 	return fallback, nil
+}
+
+func UrlWithQuery(url url.URL, params ...string) url.URL {
+	q := url.Query()
+	for i := 0; i+1 < len(params); i += 2 {
+		if params[i] == "" || params[i+1] == "" {
+			continue
+		}
+		q.Set(params[i], params[i+1])
+	}
+	url.RawQuery = q.Encode()
+	return url
 }

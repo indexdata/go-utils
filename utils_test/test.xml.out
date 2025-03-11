@@ -1,7 +1,8 @@
-<root version="1.0">
+<root xmlns="http://some.com" xmlns:z="http://some.com/z" z:version="1.0" version="2.0">
   <date>2024-06-30T00:00:00.000Z</date>
   <datePtr>2024-06-30T00:00:00.000Z</datePtr>
   <dateMissing>0001-01-01T00:00:00.000Z</dateMissing>
   <dateEmpty>0001-01-01T00:00:00.000Z</dateEmpty>
   <dateEmptyPtr>0001-01-01T00:00:00.000Z</dateEmptyPtr>
+  <child xmlns="http://other.com" z:revision="y">Hi</child>
 </root>

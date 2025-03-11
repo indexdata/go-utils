@@ -1,8 +1,13 @@
 {
+  "@versionNS": "1.0",
   "@version": "1.0",
   "date": "2024-06-30T00:00:00+01:00",
   "datePtr": "2024-06-30T00:00:00Z",
   "dateMissing": "0001-01-01T00:00:00Z",
   "dateEmpty": "0001-01-01T00:00:00Z",
-  "dateEmptyPtr": "0001-01-01T00:00:00Z"
+  "dateEmptyPtr": "0001-01-01T00:00:00Z",
+  "child": {
+    "#text": "Hi",
+    "@revision": "y"
+  }
 }
