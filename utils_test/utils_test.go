@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
 	"testing"
@@ -13,7 +14,8 @@ import (
 )
 
 type Root struct {
-	XMLName        xml.Name           `xml:"root" json:"-"`
+	XMLName        xml.Name           `xml:"http://some.com root" json:"-"`
+	VersionNS      *utils.PrefixAttr  `xml:"http://some.com/z version,attr,omitempty" json:"@versionNS,omitempty"`
 	Version        *utils.PrefixAttr  `xml:"version,attr,omitempty" json:"@version,omitempty"`
 	Date           utils.XSDDateTime  `xml:"date,omitempty" json:"date,omitempty"`
 	DatePtr        *utils.XSDDateTime `xml:"datePtr,omitempty" json:"datePtr,omitempty"`
@@ -21,6 +23,13 @@ type Root struct {
 	DateMissingPtr *utils.XSDDateTime `xml:"dateMissingPtr,omitempty" json:"dateMissingPtr,omitempty"`
 	DateEmpty      utils.XSDDateTime  `xml:"dateEmpty,omitempty" json:"dateEmpty,omitempty"`
 	DateEmptyPtr   *utils.XSDDateTime `xml:"dateEmptyPtr,omitempty" json:"dateEmptyPtr,omitempty"`
+	Child          Child              `xml:"child" json:"child,omitempty"`
+}
+
+type Child struct {
+	XMLName  xml.Name `xml:"http://other.com child" json:"-"`
+	Text     string   `xml:",chardata" json:"#text,omitempty"`
+	Revision string   `xml:"http://some.com/z revision,attr,omitempty" json:"@revision,omitempty"`
 }
 
 func TestGetEnvInt(t *testing.T) {
@@ -117,7 +126,7 @@ func TestXMLUtils(t *testing.T) {
 	var doc Root
 	err = xml.Unmarshal(xd, &doc)
 	if err != nil {
-		t.Fatalf("Failure marshaling test file %v", err)
+		t.Fatalf("Failure unmarshaling test file %v", err)
 	}
 	actual, _ := xml.MarshalIndent(&doc, "", "  ")
 	actual = append(actual, '\n')
@@ -273,4 +282,15 @@ func TestNewPrefixAttr(t *testing.T) {
 	assert.Empty(t, prefixAttr.Name.Space)
 	assert.Equal(t, "x", prefixAttr.Name.Local)
 	assert.Equal(t, "v", prefixAttr.Value)
+}
+
+func TestUrlWithQuery(t *testing.T) {
+	in, _ := url.Parse("http://example.com")
+	exp, _ := url.Parse("http://example.com?a=x&b=y")
+	actual := utils.UrlWithQuery(*in, "a", "x", "b", "y")
+	assert.Equal(t, exp.String(), actual.String())
+	actual = utils.UrlWithQuery(*in, "a", "x", "b", "y", "c")
+	assert.Equal(t, exp.String(), actual.String())
+	actual = utils.UrlWithQuery(*in, "a", "x", "b", "y", "", "")
+	assert.Equal(t, exp.String(), actual.String())
 }

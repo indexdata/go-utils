@@ -101,7 +101,7 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 			}
 		}
 	}
-	return xml.Attr{Name: xml.Name{Space: "", Local: qName}, Value: value}, nil
+	return xml.Attr{Name: xml.Name{Space: ns, Local: qName}, Value: value}, nil
 }
 
 func (pxAttr *PrefixAttr) UnmarshalText(text []byte) error {
