@@ -57,11 +57,6 @@ func (pxAttr *PrefixAttr) UnmarshalXMLAttr(attr xml.Attr) error {
 	if ns == "" && name == XMLNS {
 		defaultNS = val
 	}
-	// encoding/xml may invoke this multiple times for the same field when
-	// attributes share the same local name across namespaces; keep the first match.
-	if pxAttr.Name.Local != "" || pxAttr.Name.Space != "" || pxAttr.Value != "" {
-		return nil
-	}
 	pxAttr.Attr = attr
 	return nil
 }
@@ -86,6 +81,9 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 			}
 		}
 	} else {
+		if ns == "" && locName != XMLNS {
+			ns = defaultNS
+		}
 		prefix, ok := spaceToPrefix.Load(ns)
 		if ok {
 			qName = prefix.(string) + ":" + locName
