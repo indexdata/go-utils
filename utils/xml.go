@@ -77,27 +77,18 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 		locName = name.Local
 	}
 	var qName string
-	manualQName := false
 	if ns == XMLNS {
-		manualQName = true
-		if locName == XMLNS || locName == "" {
-			qName = XMLNS
-		} else if strings.HasPrefix(locName, XMLNS+":") {
-			qName = locName
-		} else {
-			qName = XMLNS + ":" + locName
-		}
+		qName = "xmlns:" + locName
 		if value == "" {
-			lookupPrefix := strings.TrimPrefix(locName, XMLNS+":")
-			v, ok := prefixToSpace.Load(lookupPrefix)
+			v, ok := prefixToSpace.Load(locName)
 			if ok {
 				value = v.(string)
 			}
 		}
 	} else {
-		if strings.Contains(locName, ":") {
-			manualQName = true
-			qName = locName
+		prefix, ok := spaceToPrefix.Load(ns)
+		if ok {
+			qName = prefix.(string) + ":" + locName
 		} else {
 			qName = locName
 		}
@@ -111,10 +102,6 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 				value = v.(string)
 			}
 		}
-	}
-	if manualQName {
-		// Name.Space must stay empty when Local is already a qualified name.
-		return xml.Attr{Name: xml.Name{Local: qName}, Value: value}, nil
 	}
 	return xml.Attr{Name: xml.Name{Space: ns, Local: qName}, Value: value}, nil
 }
