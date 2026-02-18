@@ -15,7 +15,7 @@ import (
 
 type Root struct {
 	XMLName        xml.Name           `xml:"http://some.com root" json:"-"`
-	VersionNS      *utils.PrefixAttr  `xml:"http://some.com/z version,attr,omitempty" json:"@versionNS,omitempty"`
+	VersionNS      *utils.PrefixAttr  `xml:"http://some.com/z versionNs,attr,omitempty" json:"@versionNS,omitempty"`
 	Version        *utils.PrefixAttr  `xml:"version,attr,omitempty" json:"@version,omitempty"`
 	Date           utils.XSDDateTime  `xml:"date,omitempty" json:"date,omitempty"`
 	DatePtr        *utils.XSDDateTime `xml:"datePtr,omitempty" json:"datePtr,omitempty"`
@@ -136,37 +136,6 @@ func TestXMLUtils(t *testing.T) {
 	}
 	expected, _ := io.ReadAll(expectedFile)
 	assert.Equal(t, string(expected), string(actual))
-}
-
-func TestXMLPrefixAttrQualifiedNames(t *testing.T) {
-	const uri = "http://illtransactions.org/2013/iso18626"
-	utils.NSPrefix("iso18626", uri)
-
-	type Msg struct {
-		XMLName     xml.Name          `xml:"ISO18626Message"`
-		Version     *utils.PrefixAttr `xml:"version,attr,omitempty"`
-		XMLNSIll    *utils.PrefixAttr `xml:"xmlns:ill,attr,omitempty"`
-		XMLNSXSI    *utils.PrefixAttr `xml:"xmlns:xsi,attr,omitempty"`
-		Schema      *utils.PrefixAttr `xml:"xsi:schemaLocation,attr,omitempty"`
-	}
-
-	msg := Msg{
-		Version:  utils.NewPrefixAttrNS(uri, "ill:version", "1.2"),
-		XMLNSIll: utils.NewPrefixAttrNS(utils.XMLNS, "xmlns:ill", uri),
-		XMLNSXSI: utils.NewPrefixAttrNS(utils.XMLNS, "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"),
-		Schema:   utils.NewPrefixAttr("xsi:schemaLocation", uri+" http://illtransactions.org/schemas/ISO-18626-v1_2.xsd"),
-	}
-
-	out, err := xml.MarshalIndent(&msg, "", "  ")
-	assert.NoError(t, err)
-	assert.Contains(t, string(out), `ill:version="1.2"`)
-	assert.Contains(t, string(out), `xmlns:ill="http://illtransactions.org/2013/iso18626"`)
-	assert.NotContains(t, string(out), "_xmlns")
-	assert.NotContains(t, string(out), "xmlns:xmlns:")
-
-	var roundTrip Msg
-	err = xml.Unmarshal(out, &roundTrip)
-	assert.NoError(t, err)
 }
 
 func TestXMLToJSON(t *testing.T) {

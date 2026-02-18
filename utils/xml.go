@@ -57,11 +57,6 @@ func (pxAttr *PrefixAttr) UnmarshalXMLAttr(attr xml.Attr) error {
 	if ns == "" && name == XMLNS {
 		defaultNS = val
 	}
-	// encoding/xml may invoke this multiple times for the same field when
-	// attributes share the same local name across namespaces; keep the first match.
-	if pxAttr.Name.Local != "" || pxAttr.Name.Space != "" || pxAttr.Value != "" {
-		return nil
-	}
 	pxAttr.Attr = attr
 	return nil
 }
@@ -70,6 +65,9 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	var ns, locName, value string
 	if pxAttr != nil && !reflect.ValueOf(*pxAttr).IsZero() {
 		ns = pxAttr.Name.Space
+		if ns == "" {
+			ns = name.Space
+		}
 		locName = pxAttr.Name.Local
 		value = pxAttr.Value
 	} else { //value not set and omitempty=false
@@ -77,27 +75,21 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 		locName = name.Local
 	}
 	var qName string
-	manualQName := false
 	if ns == XMLNS {
-		manualQName = true
-		if locName == XMLNS || locName == "" {
-			qName = XMLNS
-		} else if strings.HasPrefix(locName, XMLNS+":") {
-			qName = locName
-		} else {
-			qName = XMLNS + ":" + locName
-		}
+		qName = "xmlns:" + locName
 		if value == "" {
-			lookupPrefix := strings.TrimPrefix(locName, XMLNS+":")
-			v, ok := prefixToSpace.Load(lookupPrefix)
+			v, ok := prefixToSpace.Load(locName)
 			if ok {
 				value = v.(string)
 			}
 		}
 	} else {
-		if strings.Contains(locName, ":") {
-			manualQName = true
-			qName = locName
+		if ns == "" && locName != XMLNS {
+			ns = defaultNS
+		}
+		prefix, ok := spaceToPrefix.Load(ns)
+		if ok {
+			qName = prefix.(string) + ":" + locName
 		} else {
 			qName = locName
 		}
@@ -112,11 +104,7 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 			}
 		}
 	}
-	if manualQName {
-		// Name.Space must stay empty when Local is already a qualified name.
-		return xml.Attr{Name: xml.Name{Local: qName}, Value: value}, nil
-	}
-	return xml.Attr{Name: xml.Name{Space: ns, Local: qName}, Value: value}, nil
+	return xml.Attr{Name: xml.Name{Space: "", Local: qName}, Value: value}, nil
 }
 
 func (pxAttr *PrefixAttr) UnmarshalText(text []byte) error {

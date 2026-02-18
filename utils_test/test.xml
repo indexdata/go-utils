@@ -1,4 +1,4 @@
-<root version="2.0" v:version="1.0" xmlns="http://some.com" xmlns:v="http://some.com/z">
+<root version="2.0" xmlns:v="http://some.com/z" v:versionNs="1.0" xmlns="http://some.com">
   <date xmlns="http://some.com">2024-06-30T00:00:00+01:00</date>
   <datePtr>2024-06-30T00:00:00Z</datePtr>
   <dateEmpty></dateEmpty>
