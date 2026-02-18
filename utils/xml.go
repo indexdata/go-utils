@@ -65,6 +65,9 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	var ns, locName, value string
 	if pxAttr != nil && !reflect.ValueOf(*pxAttr).IsZero() {
 		ns = pxAttr.Name.Space
+		if ns == "" {
+			ns = name.Space
+		}
 		locName = pxAttr.Name.Local
 		value = pxAttr.Value
 	} else { //value not set and omitempty=false
@@ -101,7 +104,7 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 			}
 		}
 	}
-	return xml.Attr{Name: xml.Name{Space: ns, Local: qName}, Value: value}, nil
+	return xml.Attr{Name: xml.Name{Space: "", Local: qName}, Value: value}, nil
 }
 
 func (pxAttr *PrefixAttr) UnmarshalText(text []byte) error {

@@ -15,7 +15,7 @@ import (
 
 type Root struct {
 	XMLName        xml.Name           `xml:"http://some.com root" json:"-"`
-	VersionNS      *utils.PrefixAttr  `xml:"http://some.com/z version,attr,omitempty" json:"@versionNS,omitempty"`
+	VersionNS      *utils.PrefixAttr  `xml:"http://some.com/z versionNs,attr,omitempty" json:"@versionNS,omitempty"`
 	Version        *utils.PrefixAttr  `xml:"version,attr,omitempty" json:"@version,omitempty"`
 	Date           utils.XSDDateTime  `xml:"date,omitempty" json:"date,omitempty"`
 	DatePtr        *utils.XSDDateTime `xml:"datePtr,omitempty" json:"datePtr,omitempty"`
