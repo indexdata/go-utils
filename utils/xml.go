@@ -69,6 +69,9 @@ func (pxAttr *PrefixAttr) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 			ns = name.Space
 		}
 		locName = pxAttr.Name.Local
+		if locName == "" { // fallback to struct tag if name is not set, eg in JSON roundtrip
+			locName = name.Local
+		}
 		value = pxAttr.Value
 	} else { //value not set and omitempty=false
 		ns = name.Space
